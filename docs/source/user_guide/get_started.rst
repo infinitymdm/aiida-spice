@@ -13,7 +13,7 @@ Use the following commands to install the plugin::
     git clone https://github.com/infinitymdm/aiida-spice .
     cd aiida-spice
     pip install -e .  # also installs aiida, if missing (but not postgres)
-    #pip install -e .[pre-commit,testing] # install extras for more features
+    # pip install -e .[pre-commit,testing] # install extras for more features
     verdi quicksetup  # better to set up a new profile
     verdi plugin list aiida.calculations  # should now show your calculation plugins
 
@@ -38,5 +38,5 @@ If you have already set up your own aiida_spice code using
 Available calculations
 ++++++++++++++++++++++
 
-.. aiida-calcjob:: DiffCalculation
-    :module: aiida_spice.calculations
+.. aiida-calcjob:: NgspiceCalculation
+    :module: aiida_spice.calculations.ngspice
