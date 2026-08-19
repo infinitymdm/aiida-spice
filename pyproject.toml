@@ -42,12 +42,12 @@ Source = "https://github.com/infinitymdm/aiida-spice"
 
 [project.entry-points."aiida.calculations"]
 "spice.ngspice" = "aiida_spice.calculations.ngspice:NgspiceCalculation"
-"spice.xyce" = "aiida_spice.calculations.xyce:XyceCalculation"
-"spice.hspice" = "aiida_spice.calculations.hspice:HspiceCalculation"
-"spice.spectre" = "aiida_spice.calculations.spectre:SpectreCalculation"
+# "spice.xyce" = "aiida_spice.calculations.xyce:XyceCalculation"
+# "spice.hspice" = "aiida_spice.calculations.hspice:HspiceCalculation"
+# "spice.spectre" = "aiida_spice.calculations.spectre:SpectreCalculation"
 
 [project.entry-points."aiida.parsers"]
-"spice.rawfile" = "aiida_spice.parsers.spice:RawfileParser"
+"spice.rawfile" = "aiida_spice.parsers.rawfile:RawfileParser"
 
 [tool.pytest.ini_options]
 # Configuration for [pytest](https://docs.pytest.org)
