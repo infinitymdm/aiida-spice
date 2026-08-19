@@ -24,14 +24,14 @@ class RawfileParser(Parser):
 
         # Check if output raw file exists in the retrieved files
         if output_filename not in retrieved.list_object_names():
-            return self.exit_codes.ERROR_MISSING_OUTPUT_FILE
+            return self.exit_codes.ERROR_MISSING_RAWFILE_NAME
 
         # Load raw data via spicelib
         try:
             raw_data = RawRead(output_filename)
         except SpiceReadException as e:
-            self.logger.error(f"Failed to parse SPICE3 rawfile: {e}")
-            return self.exit_codes.ERROR_PARSING_FILE
+            self.logger.error(f"Failed to parse the SPICE3 rawfile: {e}")
+            return self.exit_codes.ERROR_PARSING_RAWFILE
 
         # Store trace arrays, sanitizing variable names for keys
         array_node = ArrayData()
@@ -46,5 +46,3 @@ class RawfileParser(Parser):
         # Attach output nodes to the parser outputs
         self.out("output_parameters", dict_node)
         self.out("output_arrays", array_node)
-
-        return self.exit_codes.OK

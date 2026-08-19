@@ -20,7 +20,9 @@ class NgspiceCalculation(CalcJob):
         spec.input("metadata.options.output_filename", valid_type=str, default="output.raw")
 
         # Define exit codes
-        spec.exit_code()
+        spec.exit_code(430, "ERROR_NO_RETRIEVED_FOLDER", "Failed to parse the retrieved folder")
+        spec.exit_code(440, "ERROR_MISSING_RAWFILE_NAME", "Output rawfile name not present in retrieved results")
+        spec.exit_code(450, "ERROR_PARSING_RAWFILE", "Failed to parse the SPICE3 rawfile")
 
         # Define expected outputs
         spec.output("output_parameters", valid_type=Dict, help="Parsed scalars and run metadata.")
