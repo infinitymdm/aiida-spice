@@ -19,7 +19,7 @@ simulation, with the aim of supporting a variety of FOSS and commercial simulato
 pip install git+https://github.com/infinitymdm/aiida-spice.git
 ```
 
-[ci-badge]: https://github.com/infinitymdm/aiida-spice/workflows/ci/badge.svg?branch=main
+[ci-badge]: https://github.com/infinitymdm/aiida-spice/workflows/ci/badge.svg
 [ci-link]: https://github.com/infinitymdm/aiida-spice/actions
 [docs-badge]: https://readthedocs.org/projects/aiida-spice/badge
 [docs-link]: http://aiida-spice.readthedocs.io/
