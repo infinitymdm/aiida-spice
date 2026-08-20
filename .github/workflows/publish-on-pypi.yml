@@ -27,6 +27,7 @@ jobs:
 
     - name: Build and publish
       run: |
+        hatch build
         hatch publish
       env:
         HATCH_INDEX_USER: __token__
