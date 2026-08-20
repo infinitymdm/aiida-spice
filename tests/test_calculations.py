@@ -1,31 +1,38 @@
-"""Tests for calculations."""
+#! /usr/bin/env python
+"""Run DC operating point analysis on a simple circuit on localhost using ngspice.
+
+Usage: ./example_01.py
+"""
+
+from os import path
+
+from aiida.engine import run
+from aiida.plugins import CalculationFactory, DataFactory
+
+from . import TEST_DIR
 
 
-def test_process(spice_code):
-    """Test running a calculation
-    note this does not test that the expected outputs are created of output parsing"""
+def test_ngpsice(code):
+    """Test running an ngspice calculation."""
 
     # Prepare input parameters
-    # diff_parameters = DataFactory("spice")
-    # parameters = diff_parameters({"ignore-case": True})
-    #
-    # file1 = SinglefileData(file=os.path.join(TEST_DIR, "input_files", "file1.txt"))
-    # file2 = SinglefileData(file=os.path.join(TEST_DIR, "input_files", "file2.txt"))
-    #
-    # # set up calculation
-    # inputs = {
-    #     "code": spice_code,
-    #     "parameters": parameters,
-    #     "file1": file1,
-    #     "file2": file2,
-    #     "metadata": {
-    #         "options": {"max_wallclock_seconds": 30},
-    #     },
-    # }
-    #
-    # result = run(CalculationFactory("spice"), **inputs)
-    # computed_diff = result["spice"].get_content()
+    singlefile_data = DataFactory("core.singlefile")
+    netlist = singlefile_data(file=path.join(TEST_DIR, "voltage_divider.spice"))
+    list_data = DataFactory("core.list")
+    analyses = list_data(list=[".op"])
 
-    # assert "content1" in computed_diff
-    # assert "content2" in computed_diff
-    assert True
+    inputs = {
+        "code": code,
+        "netlist": netlist,
+        "analyses": analyses,
+        "metadata": {
+            "description": "Test job submission with the aiida_spice plugin",
+        },
+    }
+
+    result = run(CalculationFactory("spice.ngspice"), **inputs)
+
+    computed_properties = result["output_properties"].get_content()
+    print(computed_properties)
+
+    assert computed_properties is not None

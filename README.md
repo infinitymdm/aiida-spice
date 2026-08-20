@@ -12,9 +12,9 @@ AiiDA plugin for SPICE circuit simulation.
 * [`.github/`](.github/): [Github Actions](https://github.com/features/actions) configuration
   * [`ci.yml`](.github/workflows/ci.yml): runs tests, checks test coverage and builds documentation at every new commit
   * [`publish-on-pypi.yml`](.github/workflows/publish-on-pypi.yml): automatically deploy git tags to PyPI - just generate a [PyPI API token](https://pypi.org/help/#apitoken) for your PyPI account and add it to the `pypi_token` secret of your github repository
-* [`aiida_spice/`](aiida_spice/): The main source code of the plugin package
-  * [`calculations`](aiida_spice/calculations): `CalcJob` subclasses for each supported simulator.
-  * [`parsers`](aiida_spice/parsers): A new `Parser` for the Berkeley SPICE3 rawfiles `RawfileParser`
+* [`aiida_spice/`](src/aiida_spice/): The main source code of the plugin package
+  * [`calculations`](src/aiida_spice/calculations): `CalcJob` subclasses for each supported simulator.
+  * [`parsers`](src/aiida_spice/parsers): A new `Parser` for the Berkeley SPICE3 rawfiles `RawfileParser`
 * [`docs/`](docs/): A documentation template ready for publication on [Read the Docs](http://aiida-diff.readthedocs.io/en/latest/)
 * [`examples/`](examples/): An example of how to submit a calculation using this plugin
 * [`tests/`](tests/): Basic regression tests using the [pytest](https://docs.pytest.org/en/latest/) framework (submitting a calculation, ...). Install `pip install -e .[testing]` and run `pytest`.
