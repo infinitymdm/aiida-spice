@@ -42,7 +42,7 @@ class NgspiceCalculation(CalcJob):
             for prm, val in self.inputs.parameters.get_dict().items():
                 handle.write(f".param {prm}={val}\n")
             handle.write(f".include {self.inputs.netlist.filename}\n\n")
-            for analysis in self.inputs.parameters.get_list():
+            for analysis in self.inputs.analyses.get_list():
                 handle.write(f"{analysis}\n")
             for opt, val in self.inputs.options.get_dict().items():
                 handle.write(f".options {opt}={val}\n")
