@@ -37,7 +37,7 @@ class RawfileParser(Parser):
 
             # Load raw data via spicelib
             try:
-                raw_data = RawRead(tmp_filepath)
+                raw_data = RawRead(tmp_filepath, dialect=self.node.get_option("parser_dialect"))
             except SpiceReadException as e:
                 self.logger.error(f"Failed to parse the SPICE3 rawfile: {e}")
                 return self.exit_codes.ERROR_PARSING_RAWFILE

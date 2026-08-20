@@ -19,6 +19,7 @@ class NgspiceCalculation(CalcJob):
         # Define parser metadata
         spec.input("metadata.options.output_filename", valid_type=str, default="output.raw")
         spec.input("metadata.options.parser_name", valid_type=str, default="spice.rawfile")
+        spec.input("metadata.options.parser_dialect", valid_type=str, default="ngspice")
 
         # Define exit codes
         spec.exit_code(430, "ERROR_NO_RETRIEVED_FOLDER", "Failed to parse the retrieved folder")
