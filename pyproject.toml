@@ -19,10 +19,11 @@ classifiers = [
     "Framework :: AiiDA"
 ]
 keywords = ["aiida", "plugin"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "aiida-core>=2.6,<3",
-    "voluptuous"
+    "voluptuous",
+    "spicelib>=1.6,<2"
 ]
 
 [project.optional-dependencies]
