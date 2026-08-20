@@ -12,8 +12,8 @@ class NgspiceCalculation(CalcJob):
         # Define inputs
         spec.input("netlist", valid_type=SinglefileData, help="The SPICE netlist file.")
         spec.input("analyses", valid_type=List, help="Analyses to run during simulation.")
-        spec.input("parameters", valid_type=Dict, help="Simulation parameters to set with .param.")
-        spec.input("options", valid_type=Dict, help="Simulation options to set with .option.")
+        spec.input("parameters", required=False, valid_type=Dict, help="Simulation parameters to set with .param.")
+        spec.input("options", required=False, valid_type=Dict, help="Simulation options to set with .option.")
 
         # Define parser metadata
         spec.input("metadata.options.parser_name", valid_type=str, default="spice.rawfile")
