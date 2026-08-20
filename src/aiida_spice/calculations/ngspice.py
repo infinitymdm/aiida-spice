@@ -1,3 +1,4 @@
+from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.engine import CalcJob
 from aiida.orm import ArrayData, Dict, List, SinglefileData
 
@@ -16,8 +17,8 @@ class NgspiceCalculation(CalcJob):
         spec.input("options", required=False, valid_type=Dict, help="Simulation options to set with .option.")
 
         # Define parser metadata
-        spec.input("metadata.options.parser_name", valid_type=str, default="spice.rawfile")
         spec.input("metadata.options.output_filename", valid_type=str, default="output.raw")
+        spec.input("metadata.options.parser_name", valid_type=str, default="spice.rawfile")
 
         # Define exit codes
         spec.exit_code(430, "ERROR_NO_RETRIEVED_FOLDER", "Failed to parse the retrieved folder")
@@ -48,15 +49,18 @@ class NgspiceCalculation(CalcJob):
                 handle.write(f".options {opt}={val}\n")
             handle.write("\n.control\n")
             handle.write("run\n")
+            handle.write(f"write {self.metadata.options.output_filename}\n")
             handle.write("quit\n")
             handle.write(".endc\n\n")
             handle.write(".end\n")
 
-        codeinfo = self.get_codeinfo()
-        codeinfo.cmdline_params = ["-r", self.metadata.options.output_filename, "-b", input_filename]
+        codeinfo = CodeInfo()
+        codeinfo.code_uuid = self.inputs.code.uuid
+        codeinfo.cmdline_params = ["-b", input_filename]
 
-        calcinfo = self.get_calcinfo()
+        calcinfo = CalcInfo()
         calcinfo.codes_info = [codeinfo]
-        calcinfo.retrieve_list = [self.metadata.options.filename]
+        calcinfo.local_copy_list = [(self.inputs.netlist.uuid, ".", ".")]
+        calcinfo.retrieve_list = [self.metadata.options.output_filename]
 
         return calcinfo

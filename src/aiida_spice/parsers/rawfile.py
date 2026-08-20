@@ -1,3 +1,6 @@
+import tempfile
+from pathlib import Path
+
 from aiida.common.exceptions import OutputParsingError
 from aiida.orm import ArrayData, Dict
 from aiida.parsers.parser import Parser
@@ -20,29 +23,37 @@ class RawfileParser(Parser):
             retrieved = self.retrieved
         except OutputParsingError:
             return self.exit_codes.ERROR_NO_RETRIEVED_FOLDER
-        output_filename = self.node.get_option("output_filename")
 
         # Check if output raw file exists in the retrieved files
+        output_filename = self.node.get_option("output_filename")
         if output_filename not in retrieved.list_object_names():
             return self.exit_codes.ERROR_MISSING_RAWFILE_NAME
 
-        # Load raw data via spicelib
-        try:
-            raw_data = RawRead(output_filename)
-        except SpiceReadException as e:
-            self.logger.error(f"Failed to parse the SPICE3 rawfile: {e}")
-            return self.exit_codes.ERROR_PARSING_RAWFILE
+        # Extract outputs to a temporary file for parsing with spicelib
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_filepath = Path(tmpdir) / output_filename
+            with retrieved.open(output_filename, "rb") as source, open(tmp_filepath, "wb") as target:
+                target.write(source.read())
 
-        # Store trace arrays, sanitizing variable names for keys
-        array_node = ArrayData()
-        for trace in raw_data.get_trace_names():
-            # Convert SPICE variable syntax e.g. v(1) -> v_1 to conform to standard array naming
-            sanitized_key = trace.replace("(", "_").replace(")", "").replace("/", "__")
-            array_node.set_array(sanitized_key, raw_data.get_trace(trace).get_wave())
+            # Load raw data via spicelib
+            try:
+                raw_data = RawRead(tmp_filepath)
+            except SpiceReadException as e:
+                self.logger.error(f"Failed to parse the SPICE3 rawfile: {e}")
+                return self.exit_codes.ERROR_PARSING_RAWFILE
 
-        # Store simulation metadata in Dict node
-        dict_node = Dict(dict=raw_data.get_raw_properties())
+            # Store trace arrays, sanitizing variable names for keys
+            array_node = ArrayData()
+            for trace in raw_data.get_trace_names():
+                # Convert SPICE variable syntax e.g. v(1) -> v_1 to conform to standard array naming
+                sanitized_key = trace.replace("(", "_").replace(")", "").replace("/", "__")
+                array_node.set_array(sanitized_key, raw_data.get_trace(trace).get_wave())
+
+            # Store simulation metadata in Dict node
+            properties = {str(k).replace(".", ""): v for k, v in raw_data.get_raw_properties().items()}
+            properties.pop("Filename", None)
+            properties_node = Dict(dict=properties)
 
         # Attach output nodes to the parser outputs
-        self.out("output_parameters", dict_node)
+        self.out("output_parameters", properties_node)
         self.out("output_arrays", array_node)
