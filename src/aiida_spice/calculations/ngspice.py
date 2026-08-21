@@ -1,6 +1,6 @@
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.engine import CalcJob
-from aiida.orm import ArrayData, Dict, List, SinglefileData
+from aiida.orm import ArrayData, Dict, FolderData, List, SinglefileData
 
 
 class NgspiceCalculation(CalcJob):
@@ -12,9 +12,10 @@ class NgspiceCalculation(CalcJob):
 
         # Define inputs
         spec.input("netlist", valid_type=SinglefileData, help="The SPICE netlist file.")
+        spec.input("includes", valid_type=FolderData, required=False, help="Folders referenced in the SPICE netlist")
         spec.input("analyses", valid_type=List, help="Analyses to run during simulation.")
-        spec.input("parameters", required=False, valid_type=Dict, help="Simulation parameters to set with .param.")
-        spec.input("options", required=False, valid_type=Dict, help="Simulation options to set with .option.")
+        spec.input("parameters", valid_type=Dict, required=False, help="Simulation parameters to set with .param.")
+        spec.input("options", valid_type=Dict, required=False, help="Simulation options to set with .option.")
 
         # Define parser metadata
         spec.input("metadata.options.output_filename", valid_type=str, default="output.raw")
@@ -36,18 +37,20 @@ class NgspiceCalculation(CalcJob):
         :param folder: an `~aiida.common.folders.Folder` to temporarily write files on disk
         :return: `~aiida.common.datastructures.CalcInfo` instance
         """
-        input_filename = "input.spice"
+        input_filename = "_aiida_input.ngspice"
 
         # Write the input SPICE deck
         with folder.open(input_filename, "w") as handle:
             handle.write("* AiiDA ngspice input deck\n")
-            for prm, val in self.inputs.parameters.get_dict().items():
-                handle.write(f".param {prm}={val}\n")
+            if "parameters" in self.inputs:
+                for prm, val in self.inputs.parameters.get_dict().items():
+                    handle.write(f".param {prm}={val}\n")
             handle.write(f".include {self.inputs.netlist.filename}\n\n")
             for analysis in self.inputs.analyses.get_list():
                 handle.write(f"{analysis}\n")
-            for opt, val in self.inputs.options.get_dict().items():
-                handle.write(f".options {opt}={val}\n")
+            if "options" in self.inputs:
+                for opt, val in self.inputs.options.get_dict().items():
+                    handle.write(f".options {opt}={val}\n")
             handle.write("\n.control\n")
             handle.write("run\n")
             handle.write(f"write {self.metadata.options.output_filename}\n")
@@ -61,7 +64,15 @@ class NgspiceCalculation(CalcJob):
 
         calcinfo = CalcInfo()
         calcinfo.codes_info = [codeinfo]
-        calcinfo.local_copy_list = [(self.inputs.netlist.uuid, ".", ".")]
+        calcinfo.local_copy_list = [
+            (self.inputs.netlist.uuid, self.inputs.netlist.filename, self.inputs.netlist.filename)
+        ]
         calcinfo.retrieve_list = [self.metadata.options.output_filename]
+
+        # Stage includes, preserving relative paths
+        if "includes" in self.inputs:
+            inc_node = self.inputs.includes
+            for filename in inc_node.list_object_names():
+                calcinfo.local_copy_list.append((inc_node.uuid, filename, filename))
 
         return calcinfo

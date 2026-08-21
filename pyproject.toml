@@ -59,6 +59,7 @@ filterwarnings = [
     "ignore:Creating AiiDA configuration folder:",
     "ignore::DeprecationWarning:plumpy:",
     "ignore::DeprecationWarning:yaml:",
+    "ignore:Object of type .* not in session, .* operation along .* will not proceed:sqlalchemy.exc.SAWarning",
 ]
 
 

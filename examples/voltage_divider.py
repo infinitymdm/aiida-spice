@@ -1,3 +1,9 @@
+#! /usr/bin/env python
+"""Run a simple example calculation using ngspice.
+
+Usage: ./voltage_divider.py
+"""
+
 from os import path
 
 from aiida import load_profile
@@ -21,8 +27,6 @@ builder = NgspiceCalculation.get_builder()
 builder.code = code
 builder.netlist = netlist
 builder.analyses = analyses
-builder.parameters = {}
-builder.options = {}
 builder.metadata.options.resources = {
     "num_machines": 1,
     "num_mpiprocs_per_machine": 1,

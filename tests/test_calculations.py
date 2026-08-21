@@ -1,9 +1,3 @@
-#! /usr/bin/env python
-"""Run DC operating point analysis on a simple circuit on localhost using ngspice.
-
-Usage: ./example_01.py
-"""
-
 from os import path
 
 from aiida.engine import run
@@ -25,8 +19,6 @@ def test_ngpsice(spice_code):
         "code": spice_code,
         "netlist": netlist,
         "analyses": analyses,
-        "parameters": {},
-        "options": {},
         "metadata": {
             "description": "Test job submission with the aiida_spice plugin",
             "options": {
