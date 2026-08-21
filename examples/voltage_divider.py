@@ -32,7 +32,6 @@ builder.metadata.options.resources = {
     "num_mpiprocs_per_machine": 1,
 }
 
-# 5. Submit job to the daemon / engine synchronously
 results = run(builder)
 
 # Print parsed outputs

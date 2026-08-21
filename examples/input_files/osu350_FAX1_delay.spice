@@ -7,11 +7,4 @@ VPW VPW 0 0.0V
 VC vC 0 PWL(0s 3.3V 6.000000000000001e-10s 3.3V 9.333333333333334e-10s 0.0V)
 CYS vYS 0 0.06pF
 Xdut GND VDD VDD VDD vC wfloat0 vYS FAX1
-.options TEMP = 25C
-.options TNOM = 25C
-.options autostop
-.options trtol = 1
-.meas TRAN cell_fall__c_to_ys trig v(vC) val=1.65 fall=1 targ v(vYS) val=1.65 fall=1
-.meas TRAN fall_transition__c_to_ys trig v(vYS) val=2.64 fall=1 targ v(vYS) val=0.66 fall=1
-.tran 0.025ns 200.0ns 0s
 .end

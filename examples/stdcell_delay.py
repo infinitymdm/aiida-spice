@@ -4,15 +4,15 @@
 Usage: ./stdcell_delay.py
 """
 
-from os import path
+from pathlib import Path
 
 from aiida import load_profile
 from aiida.engine import run
-from aiida.orm import Dict, FolderData, List, SingleFileData, load_code
+from aiida.orm import Dict, FolderData, List, SinglefileData, load_code
 from aiida.plugins import CalculationFactory
 from aiida_spice.utils.include_paths import get_include_paths
 
-INPUT_DIR = path.join(path.dirname(path.realpath(__file__)), "input_files")
+INPUT_DIR = Path(__file__).resolve().parent / "input_files"
 
 load_profile()
 
@@ -20,18 +20,24 @@ NgspiceCalculation = CalculationFactory("spice.ngspice")
 code = load_code("ngspice@localhost")
 
 # Load netlist & set parameters
-netlist = SingleFileData(file=path.join(INPUT_DIR, "osu350_FAX1_delay.spice"))
+netlist_path = INPUT_DIR / "osu350_FAX1_delay.spice"
+netlist = SinglefileData(file=netlist_path.resolve())
 includes = FolderData()
-for include_file in get_include_paths(netlist):
-    pass  # TODO
+for include_file in get_include_paths(netlist_path):
+    includes.put_object_from_file(include_file, path=include_file.name)
 analyses = List(
     list=[
-        # TODO
+        ".meas TRAN cell_fall__c_to_ys trig v(vC) val=1.65 fall=1 targ v(vYS) val=1.65 fall=1",
+        ".meas TRAN fall_transition__c_to_ys trig v(vYS) val=2.64 fall=1 targ v(vYS) val=0.66 fall=1",
+        ".tran 0.025ns 200.0ns 0s",
     ]
 )
 options = Dict(
     dict={
-        # TODO
+        "temp": "25C",
+        "tnom": "25C",
+        "autostop": 1,
+        "trtol": 1,
     }
 )
 
