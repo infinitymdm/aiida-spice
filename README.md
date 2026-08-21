@@ -16,7 +16,11 @@ simulation, with the aim of supporting a variety of FOSS and commercial simulato
 ## Installation
 
 ```
-pip install git+https://github.com/infinitymdm/aiida-spice.git
+# Install this plugin
+pip install aiida-spice
+
+# Install a compatible spice engine
+sudo apt install ngspice
 ```
 
 [ci-badge]: https://github.com/infinitymdm/aiida-spice/workflows/ci/badge.svg
