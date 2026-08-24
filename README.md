@@ -12,6 +12,7 @@ simulation, with the aim of supporting a variety of FOSS and commercial simulato
 ### Supported Simulators
 
 - [ngspice](https://ngspice.sourceforge.io/)
+- [Xyce](https://github.com/Xyce/Xyce)
 
 ## Installation
 

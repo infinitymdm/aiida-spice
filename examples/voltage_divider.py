@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-"""Run a simple example calculation using ngspice.
+"""Run a simple example calculation using Xyce.
 
 Usage: ./voltage_divider.py
 """
@@ -15,15 +15,15 @@ INPUT_DIR = path.join(path.dirname(path.realpath(__file__)), "input_files")
 
 load_profile()
 
-NgspiceCalculation = CalculationFactory("spice.ngspice")
-code = load_code("ngspice@localhost")
+XyceCalculation = CalculationFactory("spice.xyce")
+code = load_code("Xyce@localhost")
 
 # Load netlist & set parameters
 netlist = SinglefileData(file=path.join(INPUT_DIR, "voltage_divider.spice"))
 analyses = List(list=[".op"])
 
 # Set up the calculation builder
-builder = NgspiceCalculation.get_builder()
+builder = XyceCalculation.get_builder()
 builder.code = code
 builder.netlist = netlist
 builder.analyses = analyses
