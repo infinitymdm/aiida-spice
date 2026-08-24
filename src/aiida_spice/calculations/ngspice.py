@@ -60,6 +60,7 @@ class NgspiceCalculation(CalcJob):
         codeinfo = CodeInfo()
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.stdout_name = self.metadata.options.stdout_name
+        codeinfo.join_files = True
         codeinfo.cmdline_params = ["-b", input_filename]
 
         calcinfo = CalcInfo()

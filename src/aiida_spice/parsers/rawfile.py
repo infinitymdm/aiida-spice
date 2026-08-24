@@ -50,8 +50,7 @@ class RawfileParser(Parser):
             # Store trace arrays, sanitizing variable names for keys
             wave_node = ArrayData()
             for trace in raw_data.get_trace_names():
-                sanitized_key = sanitize(trace)
-                wave_node.set_array(sanitized_key, raw_data.get_trace(trace).get_wave())
+                wave_node.set_array(sanitize(trace), raw_data.get_trace(trace).get_wave())
 
             # Store simulation metadata in Dict node
             properties = {str(k).replace(".", ""): v for k, v in raw_data.get_raw_properties().items()}
@@ -70,7 +69,7 @@ class RawfileParser(Parser):
                     in_measure_block = True
                 elif in_measure_block and "=" in line:
                     [k, v, *_] = re.split(r"[=\s]+", line)
-                    measure_node[k] = float(v)
+                    measure_node[sanitize(k)] = float(v)
                 else:
                     in_measure_block = False
 
