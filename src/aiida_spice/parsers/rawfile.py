@@ -1,3 +1,4 @@
+import re
 import tempfile
 from pathlib import Path
 
@@ -25,15 +26,18 @@ class RawfileParser(Parser):
         except OutputParsingError:
             return self.exit_codes.ERROR_NO_RETRIEVED_FOLDER
 
-        # Check if output raw file exists in the retrieved files
-        output_filename = self.node.get_option("output_filename")
-        if output_filename not in retrieved.list_object_names():
-            return self.exit_codes.ERROR_MISSING_RAWFILE_NAME
+        # Check if output files are present in the retrieved files
+        rawfile_name = self.node.get_option("rawfile_name")
+        if rawfile_name not in retrieved.list_object_names():
+            return self.exit_codes.ERROR_MISSING_RAWFILE
+        stdout_name = self.node.get_option("stdout_name")
+        if stdout_name not in retrieved.list_object_names():
+            return self.exit_codes.ERROR_MISSING_STDOUT
 
         # Extract outputs to a temporary file for parsing with spicelib
         with tempfile.TemporaryDirectory() as tmpdir:
-            tmp_filepath = Path(tmpdir) / output_filename
-            with retrieved.open(output_filename, "rb") as source, open(tmp_filepath, "wb") as target:
+            tmp_filepath = Path(tmpdir) / rawfile_name
+            with retrieved.open(rawfile_name, "rb") as source, open(tmp_filepath, "wb") as target:
                 target.write(source.read())
 
             # Load raw data via spicelib
@@ -44,15 +48,33 @@ class RawfileParser(Parser):
                 return self.exit_codes.ERROR_PARSING_RAWFILE
 
             # Store trace arrays, sanitizing variable names for keys
-            array_node = ArrayData()
+            wave_node = ArrayData()
             for trace in raw_data.get_trace_names():
-                array_node.set_array(sanitize(trace), raw_data.get_trace(trace).get_wave())
+                sanitized_key = sanitize(trace)
+                wave_node.set_array(sanitized_key, raw_data.get_trace(trace).get_wave())
 
             # Store simulation metadata in Dict node
             properties = {str(k).replace(".", ""): v for k, v in raw_data.get_raw_properties().items()}
             properties.pop("Filename", None)
-            properties_node = Dict(dict=properties)
+            properties.pop("Variables", None)
+            metadata_node = Dict(dict=properties)
+
+        # Read measurement results from stdout
+        with retrieved.open(stdout_name, "r") as handle:
+            measure_node = Dict()
+            in_measure_block = False
+            for line in handle.readlines():
+                if line.isspace() or line.strip("-").isspace():
+                    continue
+                if line.strip().startswith("Measurement"):
+                    in_measure_block = True
+                elif in_measure_block and "=" in line:
+                    [k, v, *_] = re.split(r"[=\s]+", line)
+                    measure_node[k] = float(v)
+                else:
+                    in_measure_block = False
 
         # Attach output nodes to the parser outputs
-        self.out("output_parameters", properties_node)
-        self.out("output_arrays", array_node)
+        self.out("metadata", metadata_node)
+        self.out("measurements", measure_node)
+        self.out("trace_data", wave_node)

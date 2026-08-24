@@ -31,6 +31,6 @@ def test_ngpsice(spice_code):
     }
 
     result = run(CalculationFactory("spice.ngspice"), **inputs)
-    computed_properties = result["output_parameters"].get_dict()
+    parsed_metadata = result["metadata"].get_dict()
 
-    assert computed_properties is not None
+    assert parsed_metadata is not None

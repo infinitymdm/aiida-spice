@@ -61,4 +61,6 @@ with enable_caching(identifier="spice.ngspice"):
     results = run(builder)
 
     # Print parsed outputs
-    print("Parsed Parameters:", results["output_parameters"].get_dict())
+    print("Metadata:", results["metadata"].get_dict())
+    print("Measurements:", results["measurements"].get_dict())
+    print("Traces:", results["trace_data"].get_arraynames())

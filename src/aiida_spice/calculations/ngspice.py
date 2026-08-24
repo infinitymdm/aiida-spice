@@ -18,25 +18,24 @@ class NgspiceCalculation(CalcJob):
         spec.input("options", valid_type=Dict, required=False, help="Simulation options to set with .option.")
 
         # Define parser metadata
-        spec.input("metadata.options.output_filename", valid_type=str, default="output.raw")
+        spec.input("metadata.options.stdout_name", valid_type=str, default="stdout.txt")
+        spec.input("metadata.options.rawfile_name", valid_type=str, default="output.raw")
         spec.input("metadata.options.parser_name", valid_type=str, default="spice.rawfile")
         spec.input("metadata.options.parser_dialect", valid_type=str, default="ngspice")
 
         # Define exit codes
         spec.exit_code(430, "ERROR_NO_RETRIEVED_FOLDER", "Failed to parse the retrieved folder")
-        spec.exit_code(440, "ERROR_MISSING_RAWFILE_NAME", "Output rawfile name not present in retrieved results")
+        spec.exit_code(440, "ERROR_MISSING_RAWFILE", "Output rawfile not present in retrieved results")
+        spec.exit_code(441, "ERROR_MISSING_STDOUT", "stdout transcript not present in retrieved results")
         spec.exit_code(450, "ERROR_PARSING_RAWFILE", "Failed to parse the SPICE3 rawfile")
 
         # Define expected outputs
-        spec.output("output_parameters", valid_type=Dict, help="Parsed scalars and run metadata.")
-        spec.output("output_arrays", valid_type=ArrayData, help="Parsed voltage and current vectors")
+        spec.output("metadata", valid_type=Dict, help="Parsed run metadata.")
+        spec.output("measurements", valid_type=Dict, help="Parsed measurement results, if .meas directives were used")
+        spec.output("trace_data", valid_type=ArrayData, help="Parsed vectors of voltage, current, etc.")
 
     def prepare_for_submission(self, folder):
-        """Write the input files required for the ngspice simulation.
-
-        :param folder: an `~aiida.common.folders.Folder` to temporarily write files on disk
-        :return: `~aiida.common.datastructures.CalcInfo` instance
-        """
+        """Write the input files required for the ngspice simulation."""
         input_filename = "_aiida_input.ngspice"
 
         # Write the input SPICE deck
@@ -53,21 +52,22 @@ class NgspiceCalculation(CalcJob):
                     handle.write(f".options {opt}={val}\n")
             handle.write("\n.control\n")
             handle.write("run\n")
-            handle.write(f"write {self.metadata.options.output_filename}\n")
+            handle.write(f"write {self.metadata.options.rawfile_name}\n")
             handle.write("quit\n")
             handle.write(".endc\n\n")
             handle.write(".end\n")
 
         codeinfo = CodeInfo()
         codeinfo.code_uuid = self.inputs.code.uuid
+        codeinfo.stdout_name = self.metadata.options.stdout_name
         codeinfo.cmdline_params = ["-b", input_filename]
 
         calcinfo = CalcInfo()
         calcinfo.codes_info = [codeinfo]
         calcinfo.local_copy_list = [
-            (self.inputs.netlist.uuid, self.inputs.netlist.filename, self.inputs.netlist.filename)
+            (self.inputs.netlist.uuid, self.inputs.netlist.filename, self.inputs.netlist.filename),
         ]
-        calcinfo.retrieve_list = [self.metadata.options.output_filename]
+        calcinfo.retrieve_list = [self.metadata.options.stdout_name, self.metadata.options.rawfile_name]
 
         # Stage includes, preserving relative paths
         if "includes" in self.inputs:

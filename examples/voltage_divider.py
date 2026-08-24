@@ -34,5 +34,7 @@ builder.metadata.options.resources = {
 
 results = run(builder)
 
-# Print parsed outputs
-print("Parsed Parameters:", results["output_parameters"].get_dict())
+# Print results
+for trace_name in results["trace_data"].get_arraynames():
+    print(f"{trace_name}:\t", end="")
+    print(results["trace_data"].get_array(trace_name))
