@@ -8,6 +8,7 @@ from pathlib import Path
 
 from aiida import load_profile
 from aiida.engine import run
+from aiida.manage.caching import enable_caching
 from aiida.orm import Dict, FolderData, List, SinglefileData, load_code
 from aiida.plugins import CalculationFactory
 from aiida_spice.utils.include_paths import get_include_paths
@@ -20,6 +21,10 @@ NgspiceCalculation = CalculationFactory("spice.ngspice")
 code = load_code("ngspice@localhost")
 
 # Load netlist & set parameters
+# NOTE: This netlist has several includes which must be present on your system.
+#       See https://stineje.github.io/CharLib/chapters/03_user_guide.html#yaml-configuration-examples
+#       for instructions to get the required files, and adjust the netlist to point to the correct
+#       locations on your system.
 netlist_path = INPUT_DIR / "osu350_FAX1_delay.spice"
 netlist = SinglefileData(file=netlist_path.resolve())
 includes = FolderData()
@@ -52,7 +57,8 @@ builder.metadata.options.resources = {
     "num_mpiprocs_per_machine": 1,
 }
 
-results = run(builder)
+with enable_caching(identifier="spice.ngspice"):
+    results = run(builder)
 
-# Print parsed outputs
-print("Parsed Parameters:", results["output_parameters"].get_dict())
+    # Print parsed outputs
+    print("Parsed Parameters:", results["output_parameters"].get_dict())
