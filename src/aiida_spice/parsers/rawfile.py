@@ -4,6 +4,7 @@ from pathlib import Path
 from aiida.common.exceptions import OutputParsingError
 from aiida.orm import ArrayData, Dict
 from aiida.parsers.parser import Parser
+from aiida_spice.utils.sanitize_variables import sanitize
 from spicelib import RawRead, SpiceReadException
 
 
@@ -45,9 +46,7 @@ class RawfileParser(Parser):
             # Store trace arrays, sanitizing variable names for keys
             array_node = ArrayData()
             for trace in raw_data.get_trace_names():
-                # Convert SPICE variable syntax e.g. v(1) -> v_1 to conform to standard array naming
-                sanitized_key = trace.replace("(", "_").replace(")", "").replace("/", "__")
-                array_node.set_array(sanitized_key, raw_data.get_trace(trace).get_wave())
+                array_node.set_array(sanitize(trace), raw_data.get_trace(trace).get_wave())
 
             # Store simulation metadata in Dict node
             properties = {str(k).replace(".", ""): v for k, v in raw_data.get_raw_properties().items()}
