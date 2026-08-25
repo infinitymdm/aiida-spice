@@ -11,6 +11,7 @@ from aiida.engine import run
 from aiida.manage.caching import enable_caching
 from aiida.orm import Dict, FolderData, List, SinglefileData, load_code
 from aiida.plugins import CalculationFactory
+
 from aiida_spice.utils.include_paths import get_include_paths
 
 INPUT_DIR = Path(__file__).resolve().parent / "input_files"

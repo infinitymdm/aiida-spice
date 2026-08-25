@@ -14,9 +14,10 @@ import os
 import sys
 import time
 
-import aiida_spice
 from aiida import load_profile
 from aiida.storage.sqlite_temp import SqliteTempBackend
+
+import aiida_spice
 
 # -- AiiDA-related setup --------------------------------------------------
 
@@ -211,7 +212,7 @@ def run_apidoc(_):
     # from sphinx.apidoc import main
     # main([None, '-e', '-o', apidoc_dir, package_dir, '--force'])
 
-    import subprocess
+    import subprocess  # noqa: PLC0415
 
     cmd_path = "sphinx-apidoc"
     if hasattr(sys, "real_prefix"):  # Check to see if we are in a virtualenv

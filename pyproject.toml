@@ -133,7 +133,7 @@ cov-report = "coverage report"
 python = ["3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.hatch-static-analysis]
-dependencies = ["ruff==0.4.3"]
+dependencies = ["ruff==0.13.2"]
 
 [tool.hatch.envs.hatch-static-analysis.scripts]
 # Fixes are executed with `hatch fmt`.
