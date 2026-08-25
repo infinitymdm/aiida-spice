@@ -39,6 +39,12 @@ docs = [
     "sphinx-sqlalchemy~=0.2.0",
     "sphinx-intl~=2.1.0"
 ]
+tests = [
+    "aiida-core[atomic_tools,rest]",
+    "pytest~=9.1",
+    "pytest-cov~=7.1",
+    "sphinx~=7.2.0",
+]
 
 [project.urls]
 Source = "https://github.com/infinitymdm/aiida-spice"
@@ -106,9 +112,9 @@ path = "src/aiida_spice/__init__.py"
 [tool.hatch.envs.hatch-test]
 dependencies = [
     'pgtest~=1.3,>=1.3.1',
-    'coverage~=7.0',
-    'pytest~=7.0',
-    "pytest-cov~=4.1",
+    'coverage~=7.15',
+    'pytest~=9.1',
+    "pytest-cov~=7.1",
     "ipdb"
 ]
 

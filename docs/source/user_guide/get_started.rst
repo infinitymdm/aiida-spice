@@ -13,30 +13,40 @@ Use the following commands to install the plugin::
     git clone https://github.com/infinitymdm/aiida-spice .
     cd aiida-spice
     pip install -e .  # also installs aiida, if missing (but not postgres)
-    # pip install -e .[pre-commit,testing] # install extras for more features
-    verdi quicksetup  # better to set up a new profile
-    verdi plugin list aiida.calculations  # should now show your calculation plugins
+    # pip install -e .[pre-commit,docs] # install extras for more features
+    verdi presto # Set up a new profile
+    verdi plugin list aiida.calculations # should now show spice calculations
 
-Then use ``verdi code setup`` with the ``spice`` input plugin
-to set up an AiiDA code for aiida-spice.
+Then use ``verdi code create`` to set up a spice runner. For example,
+to set up ``ngspice`` on the local machine::
+
+    sudo apt install ngspice
+    verdi code create core.code.installed --no-wrap-cmdline-params -n \
+        -L ngspice \
+        -D 45.2 \
+        -Y localhost \
+        -X $(which ngspice) \
+        -P spice.ngspice
 
 Usage
 +++++
 
-A quick demo of how to submit a calculation::
+Here's a quick demo that performs DC operating point analysis on a simple
+voltage divider circuit using Xyce::
 
     verdi daemon start         # make sure the daemon is running
     cd examples
-    verdi run test_submit.py        # submit test calculation
-    verdi calculation list -a  # check status of calculation
+    verdi run voltage_divider.py
 
-If you have already set up your own aiida_spice code using
-``verdi code setup``, you may want to try the following command::
-
-    spice-submit  # uses aiida_spice.cli
+You'll need to make sure you have Xyce set up with ``verdi code create``
+before running this example. Take a look at voltage_diveder.py to see how
+it works.
 
 Available calculations
 ++++++++++++++++++++++
 
 .. aiida-calcjob:: NgspiceCalculation
     :module: aiida_spice.calculations.ngspice
+
+.. aiida-calcjob:: XyceCalculation
+    :module: aiida_spice.calculations.xyce
