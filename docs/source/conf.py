@@ -188,6 +188,9 @@ html_search_language = "en"
 nitpick_ignore = [
     ("py:class", "Logger"),
     ("py:class", "QbFields"),  # Warning started to appear with aiida 2.6
+    ("py:class", "aiida.engine.processes.calcjobs.calcjob.CalcJob"),
+    ("py:class", "aiida.parsers.parser.Parser"),
+    ("py:class", "CalcJobNode"),
 ]
 
 

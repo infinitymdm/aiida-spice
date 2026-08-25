@@ -3,7 +3,12 @@ from pathlib import Path
 
 
 def get_include_paths(netlist: Path, included_files: set[Path] = set()) -> set[Path]:
-    """Return parent folders of .include and .lib arguments from the input netlist"""
+    """Return parent folders of .include and .lib arguments from the input netlist
+
+    :param netlist: The path to an existing netlist file
+    :param included_files: A set of previously-parsed include files (prevents duplicate parsing during recursion)
+    :returns: A complete set of paths to files referenced by the input netlist.
+    """
     netlist_path = Path(netlist).resolve()
     pattern = re.compile(r'^\s*\.(?:include|lib)\s+["\']?(.*?)["\']?(?:\s|$)', re.IGNORECASE)
 

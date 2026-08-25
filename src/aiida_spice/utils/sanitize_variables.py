@@ -1,3 +1,7 @@
 def sanitize(name: str) -> str:
-    mappings = str.maketrans({"(": "_", ")": None, "/": "__", ".": "__", "#": None})
-    return name.translate(mappings)
+    """Convert input strings to database-compatible keys.
+
+    :param name: an input string to sanitize.
+    :returns: a sanitized version of the input string."""
+    mappings = {"(": "_", ")": None, "/": "__", ".": "__", "#": None}
+    return name.translate(str.maketrans(mappings))

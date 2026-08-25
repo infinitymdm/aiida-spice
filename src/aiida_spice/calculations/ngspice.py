@@ -35,7 +35,7 @@ class NgspiceCalculation(CalcJob):
         spec.output("trace_data", valid_type=ArrayData, help="Parsed vectors of voltage, current, etc.")
 
     def prepare_for_submission(self, folder):
-        """Write the input files required for the ngspice simulation."""
+        """Write the input files required for simulation with ngspice."""
         input_filename = "_aiida_input.ngspice"
 
         # Write the input SPICE deck

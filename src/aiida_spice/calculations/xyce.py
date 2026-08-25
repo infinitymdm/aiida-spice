@@ -35,7 +35,7 @@ class XyceCalculation(CalcJob):
         spec.output("trace_data", valid_type=ArrayData, help="Parsed vectors of voltage, current, etc.")
 
     def prepare_for_submission(self, folder):
-        """Write the input files required for the Xyce simulation."""
+        """Write the input files required for simulation with Xyce."""
         input_filename = "_aiida_input.xyce"
 
         # Write the input SPICE deck
