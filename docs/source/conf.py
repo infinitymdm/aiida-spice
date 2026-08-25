@@ -35,11 +35,16 @@ load_profile(temp_profile, allow_switch=True)
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.doctest",
     "sphinx.ext.viewcode",
-    "sphinxcontrib.contentui",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.todo",
     "aiida.sphinxext",
+    "sphinx_design",
+    "sphinx_copybutton",
+    "notfound.extension",
 ]
 
 intersphinx_mapping = {
