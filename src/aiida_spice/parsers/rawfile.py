@@ -5,8 +5,9 @@ from pathlib import Path
 from aiida.common.exceptions import OutputParsingError
 from aiida.orm import ArrayData, Dict
 from aiida.parsers.parser import Parser
-from aiida_spice.utils.sanitize_variables import sanitize
 from spicelib import RawRead, SpiceReadException
+
+from aiida_spice.utils.sanitize_variables import sanitize
 
 
 class RawfileParser(Parser):
