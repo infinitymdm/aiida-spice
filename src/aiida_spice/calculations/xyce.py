@@ -52,6 +52,7 @@ class XyceCalculation(SpiceCalculation):
         self.stage_includes(calcinfo)
 
         # Validate ip folders & file hashes
-        self.check_ip(calcinfo)
+        calcinfo.remote_symlink_list = []
+        self.stage_ip_files(calcinfo)
 
         return calcinfo

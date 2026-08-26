@@ -44,18 +44,30 @@ class SpiceCalculation(CalcJob):
             for filename in inc_node.list_object_names():
                 calcinfo.local_copy_list.append((inc_node.uuid, filename, filename))
 
-    def check_ip(self, calcinfo):
+    def stage_ip_files(self, calcinfo):
         """Check whether the input ip groups contain valid paths"""
         if "ip" in self.inputs:
+            hash_check_script = ["# IP file hash checks"]
             for label, ip_group in self.inputs.ip.items():
                 folder_node = ip_group.get("folder", None)
-                hashes_node = ip_group.get("file_hashes", None)
 
-                # TODO: Build symlink paths and stage into calcinfo.remote_symlink_list
-                print(folder_node)
+                # Stage each file relative to the remote folder
+                remote_path = folder_node.get_remote_path()
+                computer_uuid = folder_node.computer.uuid
+                hashes = ip_group.get("file_hashes", None).get_dict()
+                for relative_path, expected_hash in hashes.items():
+                    source_path = f"{remote_path}/{relative_path}"
+                    target_path = f"ip/{label}/{relative_path}"
 
-                # TODO: Write validation script (cross-platform!) and stage into calcinfo.prepended_text
-                print(hashes_node)
+                    # Stage IP file as symlinks
+                    calcinfo.remote_symlink_list.append((computer_uuid, source_path, target_path))
+
+                    # Add pre-execution verification script for this file
+                    hash_check_script.append(
+                        f"echo {expected_hash} {target_path} | sha256sum -c --status || "
+                        f"{{echo 'IP hash mismatch in {label}: {relative_path}'; exit 1;}}"
+                    )
+            calcinfo.prepended_text = "\n".join(hash_check_script)
 
 
 def validate_ip_inputs(value, port):
