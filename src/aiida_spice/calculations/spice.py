@@ -54,8 +54,8 @@ class SpiceCalculation(CalcJob):
                 # Stage each file relative to the remote folder
                 remote_path = folder_node.get_remote_path()
                 computer_uuid = folder_node.computer.uuid
-                hashes = ip_group.get("file_hashes", None).get_dict()
-                for relative_path, expected_hash in hashes.items():
+                hashes = ip_group.get("file_hashes", None).get_list()
+                for relative_path, expected_hash in hashes:
                     source_path = f"{remote_path}/{relative_path}"
                     target_path = f"ip/{label}/{relative_path}"
 
@@ -73,7 +73,7 @@ class SpiceCalculation(CalcJob):
 def validate_ip_inputs(value, port):
     """Validates inputs to ip namespaces.
 
-    Each entry in an ip namespace must have a valid 'folder' (RemoteData) and 'file_hashes' (Dict) containing at least
+    Each entry in an ip namespace must have a valid 'folder' (RemoteData) and 'file_hashes' (List) containing at least
     one item.
     """
     if not value:
@@ -86,10 +86,10 @@ def validate_ip_inputs(value, port):
         if not isinstance(group["folder"], RemoteData):
             return f"ip.{label}.folder must be of type RemoteData, got {type(group['folder']).__name__}."
 
-        # Ensure a Dict file_hashes field is provided with at least 1 item
+        # Ensure a List file_hashes field is provided with at least 1 item
         if "file_hashes" not in group:
             return f"Missing required 'file_hashes' input under 'ip.{label}'."
-        if not isinstance(group["file_hashes"], Dict):
-            return f"ip.{label}.file_hashes must be of type Dict, got {type(group['file_hashes']).__name__}."
+        if not isinstance(group["file_hashes"], List):
+            return f"ip.{label}.file_hashes must be of type List, got {type(group['file_hashes']).__name__}."
         if not group["file_hashes"]:
             return f"ip.{label}.file_hashes must contain at least 1 item."
