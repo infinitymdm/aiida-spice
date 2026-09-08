@@ -1,6 +1,4 @@
 import re
-import tempfile
-from pathlib import Path
 
 from aiida.common.exceptions import OutputParsingError
 from aiida.orm import ArrayData, Dict
@@ -35,15 +33,12 @@ class RawfileParser(Parser):
         if stdout_name not in retrieved.list_object_names():
             return self.exit_codes.ERROR_MISSING_STDOUT
 
-        # Extract outputs to a temporary file for parsing with spicelib
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmp_filepath = Path(tmpdir) / rawfile_name
-            with retrieved.open(rawfile_name, "rb") as source, open(tmp_filepath, "wb") as target:
-                target.write(source.read())
+        with retrieved.as_path() as retrieved_folder:
+            rawfile_path = retrieved_folder / rawfile_name
 
             # Load raw data via spicelib
             try:
-                raw_data = RawRead(tmp_filepath, dialect=self.node.get_option("parser_dialect"))
+                raw_data = RawRead(rawfile_path, dialect=self.node.get_option("parser_dialect"))
             except SpiceReadException as e:
                 self.logger.error(f"Failed to parse the SPICE3 rawfile: {e}")
                 return self.exit_codes.ERROR_PARSING_RAWFILE
