@@ -5,7 +5,7 @@ from aiida.orm import ArrayData, Dict
 from aiida.parsers.parser import Parser
 from spicelib import RawRead, SpiceReadException
 
-from aiida_spice.utils.sanitize_variables import sanitize
+from aiida_spice.utils import sanitize
 
 
 class RawfileParser(Parser):

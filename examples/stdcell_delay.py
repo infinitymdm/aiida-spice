@@ -9,10 +9,10 @@ from pathlib import Path
 from aiida import load_profile
 from aiida.engine import run
 from aiida.manage.caching import enable_caching
-from aiida.orm import Dict, FolderData, List, SinglefileData, load_code
+from aiida.orm import Dict, List, SinglefileData, load_code
 from aiida.plugins import CalculationFactory
 
-from aiida_spice.utils.include_paths import get_include_paths
+from aiida_spice.calculations import parse_includes
 
 INPUT_DIR = Path(__file__).resolve().parent / "input_files"
 
@@ -28,9 +28,7 @@ code = load_code("ngspice@localhost")
 #       locations on your system.
 netlist_path = INPUT_DIR / "osu350_FAX1_delay.spice"
 netlist = SinglefileData(file=netlist_path.resolve())
-includes = FolderData()
-for include_file in get_include_paths(netlist_path):
-    includes.put_object_from_file(include_file, path=include_file.name)
+includes = parse_includes(netlist)
 analyses = List(
     list=[
         ".meas TRAN cell_fall__c_to_ys trig v(vC) val=1.65 fall=1 targ v(vYS) val=1.65 fall=1",
