@@ -17,7 +17,7 @@ def sanitize(name: str) -> str:
     return name.translate(str.maketrans(mappings))
 
 
-def get_include_paths(netlist: str, included_files: set[Path] = set()) -> set[Path]:
+def get_include_paths(netlist: str, included_files: set[Path] | None = None) -> set[Path]:
     """Return parent folders of .include and .lib arguments from the input netlist
 
     :param netlist: The string content of a netlist
@@ -25,6 +25,8 @@ def get_include_paths(netlist: str, included_files: set[Path] = set()) -> set[Pa
     :returns: A complete set of paths to files referenced in the input netlist.
     """
     pattern = re.compile(r'^\s*\.(?:include|lib)\s+["\']?(.*?)["\']?(?:\s|$)', re.IGNORECASE)
+    if included_files is None:
+        included_files = set()
 
     for line in netlist.split("\n"):
         pattern_match = pattern.search(line)
