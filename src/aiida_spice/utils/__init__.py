@@ -17,11 +17,13 @@ def sanitize(name: str) -> str:
     return name.translate(str.maketrans(mappings))
 
 
-def get_include_paths(netlist: str, included_files: set[Path] | None = None) -> set[Path]:
+def get_include_paths(netlist: str, include_root: Path, included_files: set[Path] | None = None) -> set[Path]:
     """Return parent folders of .include and .lib arguments from the input netlist
 
-    :param netlist: The string content of a netlist
-    :param included_files: A set of previously-parsed include files (prevents duplicate parsing during recursion)
+    :param netlist: the string content of a netlist
+    :param include_root: a common root folder that all includes must be located under
+    :param included_files: a set of previously-parsed include files (prevents duplicate parsing during recursion)
+    :raises ValueError: if a parsed include is not in include_root
     :returns: A complete set of paths to files referenced in the input netlist.
     """
     pattern = re.compile(r'^\s*\.(?:include|lib)\s+["\']?(.*?)["\']?(?:\s|$)', re.IGNORECASE)
@@ -38,9 +40,14 @@ def get_include_paths(netlist: str, included_files: set[Path] | None = None) -> 
             if not include_path.is_absolute():
                 include_path = include_path.resolve()
 
+            # Make sure the parsed path is under include_root
+            if include_root not in include_path.parents:
+                raise ValueError("Path '{include_path!s}' not found under designated root '{include_root!s}'")
+                continue  # Skip this path if the error gets handled
+
             # If not already included, add the resolved file path and check it for includes
             if include_path not in included_files:
                 included_files.add(include_path)
-                included_files = get_include_paths(include_path.read_text(), included_files)
+                included_files = get_include_paths(include_path.read_text(), include_root, included_files)
 
     return included_files
