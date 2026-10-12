@@ -14,3 +14,15 @@ def test_get_include_paths_does_not_share_state_between_calls(tmp_path, monkeypa
 
     assert first_result == {Path("first.lib").resolve()}
     assert second_result == set()
+
+
+def test_get_include_paths_preserves_spaces_in_quoted_path(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    include_file = tmp_path / "model files" / "cell.lib"
+    include_file.parent.mkdir()
+    include_file.write_text("* Dummy file with spaces in the pathname\n")
+
+    netlist = '.include "model files/cell.lib"\n'
+
+    assert get_include_paths(netlist, tmp_path) == {include_file.resolve()}
