@@ -190,6 +190,7 @@ nitpick_ignore = [
     ("py:class", "Logger"),
     ("py:class", "QbFields"),  # Warning started to appear with aiida 2.6
     ("py:class", "aiida.orm.nodes.data.singlefile.SinglefileData"),
+    ("py:class", "aiida.orm.nodes.data.str.Str"),
     ("py:class", "aiida.orm.nodes.data.folder.FolderData"),
     ("py:class", "aiida.engine.processes.calcjobs.calcjob.CalcJob"),
     ("py:class", "aiida.parsers.parser.Parser"),
