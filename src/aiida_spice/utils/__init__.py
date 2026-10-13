@@ -39,11 +39,7 @@ def get_include_paths(netlist: str, include_root: Path, included_files: set[Path
         pattern_match = _include_pattern.search(line)
         if pattern_match:
             # Extract path
-            include_path = Path(pattern_match.group(1).split()[0])
-
-            # Resolve relative paths
-            if not include_path.is_absolute():
-                include_path = include_path.resolve()
+            include_path = Path(pattern_match.group(1).split()[0]).resolve()
 
             # Make sure the parsed path is under include_root
             if include_root not in include_path.parents:
