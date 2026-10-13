@@ -19,12 +19,9 @@ def parse_includes(netlist: SinglefileData, root_path: Str | None = None) -> Fol
     Paths are stored relative to root_path, which defaults to the current working directory if not provided. Includes
     outside root_path will cause a ValueError.
     """
-    if root_path is None:
-        include_root = Path.cwd().resolve()
-    else:
-        include_root = Path(root_path.value)
-
+    include_root = (Path.cwd() if root_path is None else Path(root_path.value)).resolve()
     include_folder = FolderData()
     for path in get_include_paths(netlist.get_content(), include_root):
-        include_folder.put_object_from_file(path.resolve(), path.name)
+        destination = path.relative_to(include_root).as_posix()
+        include_folder.put_object_from_file(path, destination)
     return include_folder
