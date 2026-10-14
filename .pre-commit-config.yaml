@@ -3,11 +3,11 @@ repos:
   hooks:
   - id: format
     name: format
-    entry: hatch fmt -f
+    entry: hatch check fmt --fix
     language: system
     types: [python]
   - id: lint
     name: lint
-    entry: hatch fmt -l
+    entry: hatch check code --fix
     language: system
     types: [python]
