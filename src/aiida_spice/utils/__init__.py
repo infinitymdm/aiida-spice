@@ -52,7 +52,7 @@ def get_include_paths(
             include_path = Path(pattern_match.group(1).split()[0])
 
             # Check against base_dir first
-            if (base_dir / include_path).exists():
+            if not include_path.is_absolute():
                 include_path = base_dir / include_path
 
             # Make sure the parsed path is under include_root
