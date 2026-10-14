@@ -69,3 +69,12 @@ def get_include_paths(
                 )
 
     return included_files
+
+
+def hash_include_files(included_files: set[Path], include_root: Path | None = None):
+    """For each included file, yield the absolute path and SHA3-256 hash as a 2-tuple
+
+    :param included_files: a set of resolved absolute paths.
+    :param include_root: a folder Path which all included_files must fall under.
+    """
+    pass  # TODO
