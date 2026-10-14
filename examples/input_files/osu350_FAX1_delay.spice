@@ -1,6 +1,6 @@
 .title comb_delay
-.include /home/marcus/software/charlib/test/examples/osu350/spice/osu035_stdcells.sp
-.include /home/marcus/software/charlib/test/examples/osu350/models/ami035.m
+.include spice/osu035_stdcells.sp
+.include models/ami035.m
 VDD VDD 0 3.3V
 VNW VNW 0 3.3V
 VPW VPW 0 0.0V
