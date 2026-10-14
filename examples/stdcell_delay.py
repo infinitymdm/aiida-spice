@@ -22,13 +22,13 @@ NgspiceCalculation = CalculationFactory("spice.ngspice")
 code = load_code("ngspice@localhost")
 
 # Load netlist & set parameters
-# NOTE: This netlist has several includes which must be present on your system.
-#       See https://stineje.github.io/CharLib/chapters/03_user_guide.html#yaml-configuration-examples
-#       for instructions to get the required files, and adjust the netlist to point to the correct
-#       locations on your system.
 netlist_path = INPUT_DIR / "osu350_FAX1_delay.spice"
 netlist = SinglefileData(file=netlist_path.resolve())
-includes = parse_includes(netlist)
+# NOTE: This netlist has several includes which must be present on your system.
+#       See https://stineje.github.io/CharLib/chapters/03_user_guide.html#yaml-configuration-examples
+#       for instructions to get the required files, and adjust root_path below to point to the correct
+#       locations on your system.
+includes = parse_includes(netlist, root_path="/home/marcus/software/charlib/test/pdks/osu350")
 analyses = List(
     list=[
         ".meas TRAN cell_fall__c_to_ys trig v(vC) val=1.65 fall=1 targ v(vYS) val=1.65 fall=1",
