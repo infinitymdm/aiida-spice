@@ -78,3 +78,21 @@ def test_nested_include_resolves_from_including_file(tmp_path, monkeypatch):
     )
 
     assert included_files == {cells.resolve(), nested_devices.resolve()}
+
+
+@pytest.mark.parametrize("directive", [".include devices.lib", ".lib devices.lib tt"])
+def test_missing_nested_include_does_not_fall_back_to_cwd(tmp_path, monkeypatch, directive):
+    models = tmp_path / "models"
+    models.mkdir()
+    (models / "cells.lib").write_text(f"{directive}\n")
+
+    # This file must not substitute for the missing models/devices.lib.
+    (tmp_path / "devices.lib").write_text("* Wrong include file\n")
+    monkeypatch.chdir(tmp_path)
+
+    missing_include = models / "devices.lib"
+
+    with pytest.raises(FileNotFoundError) as exc_info:
+        get_include_paths(".include models/cells.lib\n", include_root=tmp_path)
+
+    assert Path(exc_info.value.filename) == missing_include.resolve()
