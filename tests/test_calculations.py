@@ -1,7 +1,11 @@
 from os import path
 
+import pytest
 from aiida.engine import run
+from aiida.orm import SinglefileData, Str
 from aiida.plugins import CalculationFactory, DataFactory
+
+from aiida_spice.calculations import parse_includes
 
 from . import TEST_DIR
 
@@ -64,3 +68,28 @@ def test_xyce(spice_code):
     trace_data = result["trace_data"].get_arraynames()
 
     assert trace_data is not None
+
+
+@pytest.mark.parametrize("explicit_root", [False, True])
+def test_parse_includes_preserves_duplicate_basenames(tmp_path, monkeypatch, explicit_root):
+    monkeypatch.chdir(tmp_path)
+
+    contents = {
+        "a/models.lib": "* models from directory a\n",
+        "b/models.lib": "* models from directory b\n",
+    }
+    for relative_path, content in contents.items():
+        include_file = tmp_path / relative_path
+        include_file.parent.mkdir()
+        include_file.write_text(content)
+
+    netlist_file = tmp_path / "circuit.cir"
+    netlist_file.write_text(".include a/models.lib\n.include b/models.lib\n")
+    netlist = SinglefileData(file=str(netlist_file))
+
+    kwargs = {"root_path": Str(str(tmp_path))} if explicit_root else {}
+    includes = parse_includes(netlist, **kwargs)
+
+    assert sorted(includes.list_object_names()) == ["a", "b"]
+    for relative_path, expected_content in contents.items():
+        assert includes.base.repository.get_object_content(relative_path) == expected_content
