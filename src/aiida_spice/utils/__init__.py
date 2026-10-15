@@ -72,13 +72,17 @@ def get_include_paths(
     return included_files
 
 
-def hash_include_files(included_files: set[Path], include_root: Path | None = None):
-    """For each included file, yield the absolute path and SHA3-256 hash as a 2-tuple
+def hash_include_files(included_files: set[Path], include_root: Path, hash_algorithm: str = "sha3_256"):
+    """For each included file, yield the absolute path and hash as a 2-tuple
 
     :param included_files: a set of resolved absolute paths.
     :param include_root: a folder Path which all included_files must fall under.
     """
-    pass  # TODO
+    for file in included_files:
+        file_path = file.relative_to(include_root).as_posix()
+        with open(file, "rb") as f:
+            file_hash = hashlib.file_digest(f, hash_algorithm).hexdigest()
+        yield file_path, file_hash
 
 
 def hash_pdk(pdk_root: Path, hash_algorithm: str = "sha3_256") -> str:
