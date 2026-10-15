@@ -4,6 +4,7 @@ aiida_spice.utils
 Utilities and helper functions for aiida-spice.
 """
 
+import hashlib
 import re
 from pathlib import Path
 
@@ -78,3 +79,22 @@ def hash_include_files(included_files: set[Path], include_root: Path | None = No
     :param include_root: a folder Path which all included_files must fall under.
     """
     pass  # TODO
+
+
+def hash_pdk(pdk_root: Path, hash_algorithm: str = "sha3_256") -> str:
+    """Compute the hash of the PDK located at pdk_root.
+
+    :param pdk_root: the root directory of the PDK.
+    :param hash_function:
+
+    This method computes the content-based hash of a PDK as follows:
+    1. Create an alphabetically sorted manifest of all files under pdk_root by recursively walking the directories.
+    2. Compute the hash of each file.
+    3. Combine all hashes into a single stream and return the hash of that stream.
+    """
+    files = pdk_root.rglob("*")
+    hash_function = hashlib.new(hash_algorithm)
+    for file in sorted(files):
+        with open(file, "rb") as f:
+            hash_function.update(hashlib.file_digest(f, hash_algorithm).hexdigest())
+    return hash_function.hexdigest()
