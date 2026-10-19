@@ -24,21 +24,39 @@ def parse_includes(netlist: SinglefileData, root_path: Str | None = None) -> dic
     Parsed paths are mapped relative to root_path.
     """
     include_root = (Path.cwd() if root_path is None else Path(root_path.value)).resolve()
+    include_map = {"metadata": Dict(dict={"path": str(include_root)})}
     include_files = utils.get_include_paths(netlist.get_content(), include_root)
-    include_map = {}
     for hashed_file in utils.hash_include_files(include_files, include_root):
         key = utils.sanitize(hashed_file["path"]) + hashed_file["hash"]
         include_map[key] = SinglefileData(include_root / hashed_file["path"])
     return include_map
 
 
-def parse_ip_includes(netlist: SinglefileData, pdk_path: Str) -> dict[str, Dict]:
+@calcfunction
+def parse_ip_includes(netlist: SinglefileData, ip_root: Str) -> dict[str, Dict]:
     """Parse .include and .lib statements from a spice netlist into a map containing each path and hash.
 
+    :param netlist: a SinglefileData node containing a spice netlist.
+    :param ip_root: a Str containing a valid path. All files under ip_root are assumed to be protected IP.
+
     When working with intellectual property, we must not copy protected file content into the AiiDA provenance graph.
-    This helper calculation builds a list of file paths (relative to pdk_path) and file hashes, ensuring provenance
+    This helper calculation builds a dict of file paths (relative to ip_root) and file hashes, ensuring provenance
     while protecting IP.
+
+    In addition to storing the hash & path of each included file, the ip_root directory itself is recursively hashed.
+    This means that changing any file in, for example, a PDK directory will cause the ip_root directory hash to change.
+    This should be very helpful as a version control measure to ensure that spice simulations are run against a
+    uniquely identifiable version of an IP library.
     """
-    # Hash PDK and add its identifier to the include_map
-    # Recursively read includes. Catch paths outside pdk_path and skip those files (but parse their includes)
-    pass  # TODO
+    # Hash ip_root and add its identifier to the include_map
+    ip_path = Path(ip_root).resolve()
+    ip_identifier = utils.hash_pdk(ip_path)
+    ip_map = {"ip_metadata": Dict(dict={"path": ip_path, "hash": ip_identifier})}
+
+    ip_files = utils.get_include_paths(netlist.get_content(), ip_root)
+    # TODO: Catch paths outside pdk_path and skip those files (but parse their includes)
+    # TODO: Figure out what to do in the case that there are multiple independent IP paths
+    for hashed_ip in utils.hash_include_files(ip_files, ip_root):
+        key = utils.sanitize(hashed_ip["path"]) + hashed_ip["hash"]
+        ip_map[key] = Dict(dict=hashed_ip)
+    return ip_map
