@@ -76,7 +76,7 @@ def get_include_paths(
 def hash_include_files(
     included_files: set[Path], include_root: Path, hash_algorithm: str = "sha3_256"
 ) -> Generator[dict, None, None]:
-    """For each included file, yield the absolute path and hash as a dict
+    """For each included file, yield the path and hash as a dict
 
     :param included_files: a set of resolved absolute paths.
     :param include_root: a folder Path which all included_files must fall under.
