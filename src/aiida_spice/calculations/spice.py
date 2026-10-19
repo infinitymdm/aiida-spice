@@ -1,5 +1,5 @@
 from aiida.engine import CalcJob
-from aiida.orm import ArrayData, Dict, FolderData, List, SinglefileData
+from aiida.orm import ArrayData, Dict, List, SinglefileData
 
 
 class SpiceCalculation(CalcJob):
@@ -17,7 +17,13 @@ class SpiceCalculation(CalcJob):
 
         # Define inputs
         spec.input("netlist", valid_type=SinglefileData, help="The SPICE netlist file.")
-        spec.input("includes", valid_type=FolderData, required=False, help="Files referenced in the SPICE netlist")
+        spec.input(
+            "includes",
+            valid_type=(SinglefileData, Dict),
+            dynamic=True,
+            required=False,
+            help="Files referenced in the SPICE netlist",
+        )
         spec.input("analyses", valid_type=List, help="Analyses to run during simulation.")
         spec.input("parameters", valid_type=Dict, required=False, help="Simulation parameters to set with .param.")
         spec.input("options", valid_type=Dict, required=False, help="Simulation options to set with .option.")
@@ -31,8 +37,13 @@ class SpiceCalculation(CalcJob):
         spec.output("trace_data", valid_type=ArrayData, help="Parsed vectors of voltage, current, etc.")
 
     def stage_includes(self, calcinfo):
-        """Stage includes for local copy"""
+        """Stage includes for local copy or provenance exclude as appropriate"""
         if "includes" in self.inputs:
-            inc_node = self.inputs.includes
-            for filename in inc_node.list_object_names():
-                calcinfo.local_copy_list.append((inc_node.uuid, filename, filename))
+            includes = self.inputs.includes
+            for node in includes.values():
+                if isinstance(node, SinglefileData):
+                    node_path = includes.metadata.get_dict()["path"] + "/" + node.filename
+                    calcinfo.local_copy_list.append((node.uuid, node_path, node_path))
+                elif isinstance(node, Dict):
+                    node_path = includes.ip_metadata.get_dict()["path"] + "/" + node.get_dict()["path"]
+                    calcinfo.provenance_exclude_list.append(node_path)
