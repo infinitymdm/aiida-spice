@@ -7,7 +7,7 @@ Calculations for aiida-spice.
 from pathlib import Path
 
 from aiida.engine import calcfunction
-from aiida.orm import SinglefileData, Str
+from aiida.orm import Dict, SinglefileData, Str
 
 from aiida_spice import utils
 
@@ -28,11 +28,11 @@ def parse_includes(netlist: SinglefileData, root_path: Str | None = None) -> dic
     include_map = {}
     for hashed_file in utils.hash_include_files(include_files, include_root):
         key = utils.sanitize(hashed_file["path"]) + hashed_file["hash"]
-        include_map[key] = SinglefileData(hashed_file["path"])
+        include_map[key] = SinglefileData(include_root / hashed_file["path"])
     return include_map
 
 
-def parse_ip_includes(netlist: SinglefileData, pdk_path: Str) -> dict[str, str]:
+def parse_ip_includes(netlist: SinglefileData, pdk_path: Str) -> dict[str, Dict]:
     """Parse .include and .lib statements from a spice netlist into a map containing each path and hash.
 
     When working with intellectual property, we must not copy protected file content into the AiiDA provenance graph.

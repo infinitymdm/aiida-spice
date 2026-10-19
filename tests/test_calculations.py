@@ -6,6 +6,7 @@ from aiida.orm import SinglefileData, Str
 from aiida.plugins import CalculationFactory, DataFactory
 
 from aiida_spice.calculations import parse_includes
+from aiida_spice.utils import sanitize
 
 from . import TEST_DIR
 
@@ -90,6 +91,9 @@ def test_parse_includes_preserves_duplicate_basenames(tmp_path, monkeypatch, exp
     kwargs = {"root_path": Str(str(tmp_path))} if explicit_root else {}
     includes = parse_includes(netlist, **kwargs)
 
-    assert sorted(includes.list_object_names()) == ["a", "b"]
+    assert len(includes) == len(contents)
     for relative_path, expected_content in contents.items():
-        assert includes.base.repository.get_object_content(relative_path) == expected_content
+        sanitized_prefix = sanitize(relative_path)
+        matching_keys = [key for key in includes if key.startswith(sanitized_prefix)]
+        assert len(matching_keys) == 1, f"Expected exactly 1 key matching {relative_path}"
+        assert includes[matching_keys[0]].get_content() == expected_content
