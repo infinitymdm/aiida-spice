@@ -91,6 +91,9 @@ def test_parse_includes_preserves_duplicate_basenames(tmp_path, monkeypatch, exp
     kwargs = {"root_path": Str(str(tmp_path))} if explicit_root else {}
     includes = parse_includes(netlist, **kwargs)
 
+    if explicit_root:
+        assert includes["metadata"].get_dict()["path"] == str(tmp_path)
+    includes.pop("metadata")
     assert len(includes) == len(contents)
     for relative_path, expected_content in contents.items():
         sanitized_prefix = sanitize(relative_path)
