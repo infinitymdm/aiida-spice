@@ -7,6 +7,7 @@ Utilities and helper functions for aiida-spice.
 import hashlib
 import re
 from pathlib import Path
+from typing import Generator
 
 
 def sanitize(name: str) -> str:
@@ -72,24 +73,27 @@ def get_include_paths(
     return included_files
 
 
-def hash_include_files(included_files: set[Path], include_root: Path, hash_algorithm: str = "sha3_256"):
-    """For each included file, yield the absolute path and hash as a 2-tuple
+def hash_include_files(
+    included_files: set[Path], include_root: Path, hash_algorithm: str = "sha3_256"
+) -> Generator[dict, None, None]:
+    """For each included file, yield the absolute path and hash as a dict
 
     :param included_files: a set of resolved absolute paths.
     :param include_root: a folder Path which all included_files must fall under.
+    :param hash_algorithm: the name of a hash algorithm to use, as defined in hashlib. Defaults to sha3_256.
     """
     for file in included_files:
         file_path = file.relative_to(include_root).as_posix()
         with open(file, "rb") as f:
             file_hash = hashlib.file_digest(f, hash_algorithm).hexdigest()
-        yield file_path, file_hash
+        yield {"path": file_path, "hash": file_hash}
 
 
 def hash_pdk(pdk_root: Path, hash_algorithm: str = "sha3_256") -> str:
     """Compute the hash of the PDK located at pdk_root.
 
     :param pdk_root: the root directory of the PDK.
-    :param hash_function:
+    :param hash_algorithm: the name of a hash algorithm to use, as defined in hashlib. Defaults to sha3_256.
 
     This method computes the content-based hash of a PDK as follows:
     1. Create an alphabetically sorted manifest of all files under pdk_root by recursively walking the directories.
