@@ -65,6 +65,7 @@ def get_include_paths(
 
             # If not already included, add the resolved file path and check it for includes
             if include_path not in included_files:
+                print("Adding: ", include_path)
                 included_files.add(include_path)
                 included_files = get_include_paths(
                     include_path.read_text(), include_root, include_path.parent, included_files
@@ -102,7 +103,9 @@ def hash_pdk(pdk_root: Path, hash_algorithm: str = "sha3_256") -> str:
     """
     files = pdk_root.rglob("*")
     hash_function = hashlib.new(hash_algorithm)
-    for file in sorted(files):
-        with open(file, "rb") as f:
-            hash_function.update(hashlib.file_digest(f, hash_algorithm).hexdigest())
+    for path in sorted(files):
+        if not path.is_file():
+            continue
+        with open(path, "rb") as file:
+            hash_function.update((hashlib.file_digest(file, hash_algorithm).hexdigest()).encode("utf-8"))
     return hash_function.hexdigest()
