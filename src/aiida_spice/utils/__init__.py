@@ -65,7 +65,6 @@ def get_include_paths(
 
             # If not already included, add the resolved file path and check it for includes
             if include_path not in included_files:
-                print("Adding: ", include_path)
                 included_files.add(include_path)
                 included_files = get_include_paths(
                     include_path.read_text(), include_root, include_path.parent, included_files
