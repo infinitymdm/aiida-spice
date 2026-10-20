@@ -19,6 +19,12 @@ class XyceCalculation(SpiceCalculation):
         """Write the input files required for simulation with Xyce."""
         input_filename = "_aiida_input.xyce"
 
+        # FIXME: Figure out whether we need to worry about IP includes
+        # Xyce requires absolute paths for all includes, or relative paths from the current working directory. Since we
+        # copy the main spice netlist using local_copy_list already, we shouldn't have to worry about anything else
+        # because Xyce users will have absolute paths set up for their includes. (Right?)
+        # TODO: Investigate possible situations where IP may not be locatable
+
         # Write the input SPICE deck
         with folder.open(input_filename, "w") as handle:
             handle.write("* AiiDA Xyce input deck\n")
