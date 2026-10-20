@@ -12,7 +12,7 @@ from aiida.manage.caching import enable_caching
 from aiida.orm import Dict, List, SinglefileData, load_code
 from aiida.plugins import CalculationFactory
 
-from aiida_spice.calculations import parse_includes
+from aiida_spice.calculations import parse_ip_includes
 
 INPUT_DIR = Path(__file__).resolve().parent / "input_files"
 
@@ -23,24 +23,24 @@ code = load_code("ngspice@localhost")
 
 # Load netlist & set parameters
 netlist_path = INPUT_DIR / "osu350_FAX1_delay.spice"
-netlist = SinglefileData(file=netlist_path.resolve())
+netlist = SinglefileData(file=netlist_path)
 # NOTE: This netlist has several includes which must be present on your system.
 #       See https://stineje.github.io/CharLib/chapters/03_user_guide.html#yaml-configuration-examples
 #       for instructions to get the required files, and adjust root_path below to point to the correct
 #       locations on your system.
-includes = parse_includes(netlist, root_path="/home/marcus/software/charlib/test/pdks/osu350")
+includes = parse_ip_includes(netlist, ip_root="/home/marcus/software/charlib/test/pdks/osu350")
 analyses = List(
     list=[
+        ".tran 0.025ns 200.0ns 0s",
         ".meas TRAN cell_fall__c_to_ys trig v(vC) val=1.65 fall=1 targ v(vYS) val=1.65 fall=1",
         ".meas TRAN fall_transition__c_to_ys trig v(vYS) val=2.64 fall=1 targ v(vYS) val=0.66 fall=1",
-        ".tran 0.025ns 200.0ns 0s",
     ]
 )
 options = Dict(
     dict={
         "temp": "25C",
         "tnom": "25C",
-        "autostop": 1,
+        "autostop": "true",
         "trtol": 1,
     }
 )
