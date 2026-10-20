@@ -17,7 +17,7 @@ class SpiceCalculation(CalcJob):
 
         # Define inputs
         spec.input("netlist", valid_type=SinglefileData, help="The SPICE netlist file.")
-        spec.input(
+        spec.input_namespace(
             "includes",
             valid_type=(SinglefileData, Dict),
             dynamic=True,
@@ -38,6 +38,10 @@ class SpiceCalculation(CalcJob):
 
     def stage_includes(self, calcinfo):
         """Stage includes for local copy or provenance exclude as appropriate"""
+        if not calcinfo.local_copy_list:
+            calcinfo.local_copy_list = []
+        if not calcinfo.provenance_exclude_list:
+            calcinfo.provenance_exclude_list = []
         if "includes" in self.inputs:
             includes = self.inputs.includes
             for node in includes.values():
@@ -47,3 +51,7 @@ class SpiceCalculation(CalcJob):
                 elif isinstance(node, Dict):
                     node_path = includes.ip_metadata.get_dict()["path"] + "/" + node.get_dict()["path"]
                     calcinfo.provenance_exclude_list.append(node_path)
+
+    def verify_ip(self):
+        """Ensure all ip includes match the expected hashes"""
+        pass  # TODO

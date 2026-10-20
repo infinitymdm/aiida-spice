@@ -19,18 +19,28 @@ class NgspiceCalculation(SpiceCalculation):
         """Write the input files required for simulation with ngspice."""
         input_filename = "_aiida_input.ngspice"
 
+        # Set up a .spiceinit
+        if "includes" in self.inputs:
+            with folder.open(".spiceinit", "w") as handle:
+                sourcepaths = ["$sourcepath"]
+                if "metadata" in self.inputs.includes:
+                    sourcepaths.append(self.inputs.includes.metadata.get_dict()["path"])
+                if "ip_metadata" in self.inputs.includes:
+                    sourcepaths.append(self.inputs.includes.ip_metadata.get_dict()["path"])
+                handle.write(f"setcs sourcepath = ( {' '.join(reversed(sourcepaths))} )\n")
+
         # Write the input SPICE deck
         with folder.open(input_filename, "w") as handle:
             handle.write("* AiiDA ngspice input deck\n")
             if "parameters" in self.inputs:
                 for prm, val in self.inputs.parameters.get_dict().items():
                     handle.write(f".param {prm}={val}\n")
-            handle.write(f".include {self.inputs.netlist.filename}\n\n")
+            handle.write(f".include {self.inputs.netlist.filename}\n")
             for analysis in self.inputs.analyses.get_list():
                 handle.write(f"{analysis}\n")
             if "options" in self.inputs:
                 for opt, val in self.inputs.options.get_dict().items():
-                    handle.write(f".options {opt}={val}\n")
+                    handle.write(f".option {opt}={val}\n")
             handle.write("\n.control\n")
             handle.write("run\n")
             handle.write(f"write {self.metadata.options.rawfile_name}\n")
@@ -51,11 +61,5 @@ class NgspiceCalculation(SpiceCalculation):
         ]
         calcinfo.retrieve_list = [self.metadata.options.stdout_name, self.metadata.options.rawfile_name]
         self.stage_includes(calcinfo)
-
-        # Stage includes, preserving relative paths
-        if "includes" in self.inputs:
-            inc_node = self.inputs.includes
-            for filename in inc_node.list_object_names():
-                calcinfo.local_copy_list.append((inc_node.uuid, filename, filename))
 
         return calcinfo
