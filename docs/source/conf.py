@@ -50,7 +50,7 @@ extensions = [
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "aiida": ("https://aiida.readthedocs.io/projects/aiida-core/en/stable", None),
+    "aiida": ("https://aiida-core.readthedocs.io/en/stable", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -191,6 +191,7 @@ nitpick_ignore = [
     ("py:class", "QbFields"),  # Warning started to appear with aiida 2.6
     ("py:class", "aiida.orm.nodes.data.singlefile.SinglefileData"),
     ("py:class", "aiida.orm.nodes.data.str.Str"),
+    ("py:class", "aiida.orm.nodes.data.dict.Dict"),
     ("py:class", "aiida.orm.nodes.data.folder.FolderData"),
     ("py:class", "aiida.engine.processes.calcjobs.calcjob.CalcJob"),
     ("py:class", "aiida.parsers.parser.Parser"),
