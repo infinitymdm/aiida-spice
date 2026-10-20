@@ -27,7 +27,7 @@ def parse_includes(netlist: SinglefileData, root_path: Str | None = None) -> dic
     include_map = {"metadata": Dict(dict={"path": str(include_root)})}
     include_files = utils.get_include_paths(netlist.get_content(), include_root)
     for hashed_file in utils.hash_include_files(include_files, include_root):
-        key = utils.sanitize(hashed_file["path"]) + hashed_file["hash"]
+        key = utils.sanitize(hashed_file["path"]) + "__" + hashed_file["hash"]
         include_map[key] = SinglefileData(include_root / hashed_file["path"])
     return include_map
 
@@ -57,6 +57,6 @@ def parse_ip_includes(netlist: SinglefileData, ip_root: Str) -> dict[str, Dict]:
     # TODO: Catch paths outside pdk_path and skip those files (but parse their includes)
     # TODO: Figure out what to do in the case that there are multiple independent IP paths
     for hashed_ip in utils.hash_include_files(ip_files, ip_path):
-        key = utils.sanitize(hashed_ip["path"]) + hashed_ip["hash"]
+        key = utils.sanitize(hashed_ip["path"]) + "__" + hashed_ip["hash"]
         ip_map[key] = Dict(dict=hashed_ip)
     return ip_map
