@@ -23,8 +23,6 @@ class NgspiceCalculation(SpiceCalculation):
         if "includes" in self.inputs:
             with folder.open(".spiceinit", "w") as handle:
                 sourcepaths = ["$sourcepath"]
-                if "metadata" in self.inputs.includes:
-                    sourcepaths.append(self.inputs.includes.metadata.get_dict()["path"])
                 if "ip_metadata" in self.inputs.includes:
                     sourcepaths.append(self.inputs.includes.ip_metadata.get_dict()["path"])
                 handle.write(f"setcs sourcepath = ( {' '.join(reversed(sourcepaths))} )\n")
