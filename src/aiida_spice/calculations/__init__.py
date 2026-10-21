@@ -24,11 +24,14 @@ def parse_includes(netlist: SinglefileData, root_path: Str | None = None) -> dic
     Parsed paths are mapped relative to root_path.
     """
     include_root = (Path.cwd() if root_path is None else Path(root_path.value)).resolve()
-    include_map = {"metadata": Dict(dict={"path": str(include_root)})}
+    include_map = {}
+    include_metadata = {"path": str(include_root)}
     include_files = utils.get_include_paths(netlist.get_content(), include_root)
     for hashed_file in utils.hash_include_files(include_files, include_root):
         key = utils.sanitize(hashed_file["path"]) + "__" + hashed_file["hash"]
+        include_metadata[key] = {"path": hashed_file["path"]}
         include_map[key] = SinglefileData(include_root / hashed_file["path"])
+    include_map["metadata"] = Dict(dict=include_metadata)
     return include_map
 
 
