@@ -237,7 +237,7 @@ def test_stage_includes_preserves_relative_paths(tmp_path, monkeypatch, explicit
     includes = parse_includes(netlist, **kwargs)
 
     # stage_includes only needs self.inputs; no CalcJob submission is needed.
-    calculation = SimpleNamespace(inputs=AttributeDict(includes=AttributeDict(includes)))
+    calculation = SimpleNamespace(inputs=AttributeDict({"includes": AttributeDict(includes)}))
     calcinfo = CalcInfo()
     SpiceCalculation.stage_includes(calculation, calcinfo)
 
