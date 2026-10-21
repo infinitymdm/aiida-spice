@@ -1,12 +1,15 @@
 import hashlib
 from os import path
+from types import SimpleNamespace
 
 import pytest
+from aiida.common import AttributeDict, CalcInfo
 from aiida.engine import run
 from aiida.orm import Dict, SinglefileData, Str
 from aiida.plugins import CalculationFactory, DataFactory
 
 from aiida_spice.calculations import parse_includes, parse_ip_includes
+from aiida_spice.calculations.spice import SpiceCalculation
 from aiida_spice.utils import sanitize
 
 from . import TEST_DIR
@@ -213,3 +216,36 @@ def test_parse_includes_preserves_duplicate_basenames(tmp_path, monkeypatch, exp
         matching_keys = [key for key in includes if key.startswith(sanitized_prefix)]
         assert len(matching_keys) == 1, f"Expected exactly 1 key matching {relative_path}"
         assert includes[matching_keys[0]].get_content() == expected_content
+
+
+@pytest.mark.parametrize("explicit_root", [False, True])
+def test_stage_includes_preserves_relative_paths(tmp_path, monkeypatch, explicit_root):
+    monkeypatch.chdir(tmp_path)
+    contents = {
+        "a/models.lib": "* model a\n",
+        "b/models.lib": "* model b\n",
+    }
+    for relative_path, content in contents.items():
+        include_file = tmp_path / relative_path
+        include_file.parent.mkdir()
+        include_file.write_text(content)
+
+    netlist_file = tmp_path / "circuit.cir"
+    netlist_file.write_text(".include a/models.lib\n.include b/models.lib\n")
+    netlist = SinglefileData(file=str(netlist_file))
+    kwargs = {"root_path": Str(str(tmp_path))} if explicit_root else {}
+    includes = parse_includes(netlist, **kwargs)
+
+    # stage_includes only needs self.inputs; no CalcJob submission is needed.
+    calculation = SimpleNamespace(inputs=AttributeDict(includes=AttributeDict(includes)))
+    calcinfo = CalcInfo()
+    SpiceCalculation.stage_includes(calculation, calcinfo)
+
+    expected = []
+    for relative_path, content in contents.items():
+        digest = hashlib.sha3_256(content.encode("utf-8")).hexdigest()
+        key = sanitize(relative_path) + "__" + digest
+        node = includes[key]
+        expected.append((node.uuid, node.filename, relative_path))
+
+    assert sorted(calcinfo.local_copy_list) == sorted(expected)
