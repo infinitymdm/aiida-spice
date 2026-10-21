@@ -48,7 +48,7 @@ class SpiceCalculation(CalcJob):
                 if key in ("metadata", "ip_metadata"):
                     continue  # skip metadata keys
                 if isinstance(node, SinglefileData):
-                    node_path = includes.metadata.get_dict()["path"] + "/" + node.filename
+                    node_path = includes.metadata.get_dict()[key]["path"]
                     calcinfo.local_copy_list.append((node.uuid, node.filename, node_path))
                 elif isinstance(node, Dict):
                     node_path = includes.ip_metadata.get_dict()["path"] + "/" + node.get_dict()["path"]
