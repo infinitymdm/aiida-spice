@@ -44,10 +44,12 @@ class SpiceCalculation(CalcJob):
             calcinfo.provenance_exclude_list = []
         if "includes" in self.inputs:
             includes = self.inputs.includes
-            for node in includes.values():
+            for key, node in includes.items():
+                if key in ("metadata", "ip_metadata"):
+                    continue  # skip metadata keys
                 if isinstance(node, SinglefileData):
                     node_path = includes.metadata.get_dict()["path"] + "/" + node.filename
-                    calcinfo.local_copy_list.append((node.uuid, node_path, node_path))
+                    calcinfo.local_copy_list.append((node.uuid, node.filename, node_path))
                 elif isinstance(node, Dict):
                     node_path = includes.ip_metadata.get_dict()["path"] + "/" + node.get_dict()["path"]
                     calcinfo.provenance_exclude_list.append(node_path)
