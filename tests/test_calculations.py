@@ -249,3 +249,34 @@ def test_stage_includes_preserves_relative_paths(tmp_path, monkeypatch, explicit
         expected.append((node.uuid, node.filename, relative_path))
 
     assert sorted(calcinfo.local_copy_list) == sorted(expected)
+
+
+def test_stage_includes_separates_public_and_protected_includes(tmp_path):
+    public_path = "models/public.lib"
+    public_file = tmp_path / public_path
+    public_file.parent.mkdir()
+    public_file.write_text("* public model\n")
+    public_include = SinglefileData(file=public_file)
+    protected_path = "models/protected.lib"
+    ip_root = tmp_path / "ip"
+    includes = AttributeDict(
+        {
+            "metadata": Dict(dict={"path": str(tmp_path), "public_model": {"path": public_path}}),
+            "ip_metadata": Dict(dict={"path": str(ip_root)}),
+            "public_model": public_include,
+            "protected_model": Dict(
+                dict={"path": protected_path, "hash": hashlib.sha3_256(b"* protected model\n").hexdigest()}
+            ),
+        }
+    )
+    calculation = SimpleNamespace(inputs=AttributeDict({"includes": includes}))
+    existing_copy = (public_include.uuid, public_include.filename, "existing/public.lib")
+    existing_exclusion = "existing/protected.lib"
+    calcinfo = CalcInfo()
+    calcinfo.local_copy_list = [existing_copy]
+    calcinfo.provenance_exclude_list = [existing_exclusion]
+
+    SpiceCalculation.stage_includes(calculation, calcinfo)
+
+    assert calcinfo.local_copy_list == [existing_copy, (public_include.uuid, public_include.filename, public_path)]
+    assert calcinfo.provenance_exclude_list == [existing_exclusion, str(ip_root / protected_path)]
