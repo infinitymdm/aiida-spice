@@ -59,6 +59,6 @@ class NgspiceCalculation(SpiceCalculation):
             (self.inputs.netlist.uuid, self.inputs.netlist.filename, self.inputs.netlist.filename),
         ]
         calcinfo.retrieve_list = [self.metadata.options.stdout_name, self.metadata.options.rawfile_name]
-        self.stage_includes(calcinfo)
+        self.stage_includes(folder, calcinfo)
 
         return calcinfo
