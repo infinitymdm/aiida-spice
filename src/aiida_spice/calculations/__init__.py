@@ -53,13 +53,14 @@ def parse_ip_includes(netlist: SinglefileData, ip_root: Str) -> dict[str, Dict]:
     """
     # Hash ip_root and add its identifier to the include_map
     ip_path = Path(ip_root.value).resolve()
+    ip_name = utils.sanitize(ip_path.stem)
     ip_identifier = utils.hash_pdk(ip_path)
-    ip_map = {"ip_metadata": Dict(dict={"path": ip_path.as_posix(), "hash": ip_identifier})}
+    ip_map = {f"metadata.ip.{ip_name}": Dict(dict={"path": ip_path.as_posix(), "hash": ip_identifier})}
 
     ip_files = utils.get_include_paths(netlist.get_content(), ip_path)
     # TODO: Catch paths outside pdk_path and skip those files (but parse their includes)
     # TODO: Figure out what to do in the case that there are multiple independent IP paths
     for hashed_ip in utils.hash_include_files(ip_files, ip_path):
         key = utils.sanitize(hashed_ip["path"]) + "__" + hashed_ip["hash"]
-        ip_map[key] = Dict(dict=hashed_ip)
+        ip_map[key] = Dict(dict=hashed_ip | {"ip": ip_name})
     return ip_map

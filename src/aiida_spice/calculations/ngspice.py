@@ -23,8 +23,9 @@ class NgspiceCalculation(SpiceCalculation):
         if "includes" in self.inputs:
             with folder.open(".spiceinit", "w") as handle:
                 sourcepaths = ["$sourcepath"]
-                if "ip_metadata" in self.inputs.includes:
-                    sourcepaths.append(self.inputs.includes.ip_metadata.get_dict()["path"])
+                if "ip" in self.inputs.includes.metadata:
+                    for ip_node in self.inputs.includes.metadata.ip.values():
+                        sourcepaths.append(ip_node["path"])
                 handle.write(f"setcs sourcepath = ( {' '.join(reversed(sourcepaths))} )\n")
 
         # Write the input SPICE deck
@@ -58,6 +59,6 @@ class NgspiceCalculation(SpiceCalculation):
             (self.inputs.netlist.uuid, self.inputs.netlist.filename, self.inputs.netlist.filename),
         ]
         calcinfo.retrieve_list = [self.metadata.options.stdout_name, self.metadata.options.rawfile_name]
-        self.stage_includes(calcinfo)
+        self.stage_includes(folder, calcinfo)
 
         return calcinfo
