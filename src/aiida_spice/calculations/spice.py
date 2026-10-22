@@ -1,3 +1,6 @@
+import hashlib
+from pathlib import Path
+
 from aiida.engine import CalcJob
 from aiida.orm import ArrayData, Dict, List, SinglefileData
 
@@ -36,7 +39,7 @@ class SpiceCalculation(CalcJob):
         spec.output("measurements", valid_type=Dict, help="Parsed measurement results, if .meas directives were used")
         spec.output("trace_data", valid_type=ArrayData, help="Parsed vectors of voltage, current, etc.")
 
-    def stage_includes(self, calcinfo):
+    def stage_includes(self, folder, calcinfo):
         """Stage includes for local copy or provenance exclude as appropriate"""
         if not calcinfo.local_copy_list:
             calcinfo.local_copy_list = []
@@ -45,15 +48,40 @@ class SpiceCalculation(CalcJob):
         if "includes" in self.inputs:
             includes = self.inputs.includes
             for key, node in includes.items():
-                if key in ("metadata", "ip_metadata"):
-                    continue  # skip metadata keys
+                if key == "metadata":
+                    continue
                 if isinstance(node, SinglefileData):
-                    node_path = includes.metadata.get_dict()[key]["path"]
+                    node_path = includes.metadata[key]["path"]
                     calcinfo.local_copy_list.append((node.uuid, node.filename, node_path))
                 elif isinstance(node, Dict):
-                    node_path = includes.ip_metadata.get_dict()["path"] + "/" + node.get_dict()["path"]
-                    calcinfo.provenance_exclude_list.append(node_path)
+                    stage_ip_include(folder, calcinfo, self.inputs.includes.metadata.ip, node)
 
-    def verify_ip(self):
-        """Ensure all ip includes match the expected hashes"""
-        pass  # TODO
+
+def stage_ip_include(folder, calcinfo, ip_metadata, ip_file, hash_algorithm="sha3_256"):
+    """Stage included IP files by copying them to the sandbox folder and adding them to the provenance exclude list."""
+    ip_name = ip_file["ip"]
+    ip_root_path = Path(ip_metadata[ip_name]["path"]).resolve()
+    ip_file_path = Path(ip_file["path"])
+
+    # Ensure the ip file path isn't absolute
+    if ip_file_path.is_absolute() or not ip_file_path.parts:
+        raise ValueError("IP include path must be relative to the IP root")
+
+    # Get the full path to the source file
+    source = (ip_root_path / ip_file_path).resolve()
+    if not source.is_relative_to(ip_root_path):
+        raise ValueError("IP include path resolves outside the IP root")
+
+    # Copy the file into the sandbox folder
+    destination = ip_file_path
+    target_folder = folder.get_subfolder(destination.parent.as_posix(), create=True)
+    target_folder.insert_path(str(source), dest_name=destination.name, overwrite=False)
+
+    # Verify the content hash of the staged file
+    with folder.open(destination.as_posix(), "rb") as staged_file:
+        staged_hash = hashlib.file_digest(staged_file, hash_algorithm).hexdigest()
+    if staged_hash != ip_file["hash"]:
+        raise ValueError(f"IP include hash mismatch: {ip_file_path}")
+
+    # Exclude the staged file from provenance
+    calcinfo.provenance_exclude_list.append(destination.as_posix())
